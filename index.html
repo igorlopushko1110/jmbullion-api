@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jmbullion Results</title>
+</head>
+
+<body>
+
+<div id="subject-block">
+    <input id="subject-input"
+           type="text"
+           name="subject"
+           placeholder="Subject"/>
+</div>
+
+<div id="articles-list">
+
+
+
+</div>
+
+<script>
+
+    function loadArticles(query) {
+        return fetch(`https://help.jmbullion.com/search/typeahead?query=${query}`);
+    }
+
+    function appendArticles(articles) {
+        let innerHTML = '';
+
+        if(articles.length > 0) {
+
+            for (let i = 0; i < 10; i++) {
+
+                let article = articles[i];
+
+                innerHTML += `<div class="article-block">
+                                     <a href="${article.url}">${article.name}</a>
+                              </div>`;
+
+            }
+
+        } else {
+            innerHTML = '<h4>Articles Not Found</h4>';
+        }
+
+        articlesList.innerHTML = innerHTML;
+
+    }
+
+    let spaceExist = false;
+
+    let subjectInput = document.querySelector('#subject-input');
+    let articlesList = document.querySelector('#articles-list');
+
+    let loadArticlesTimeoutId;
+
+    subjectInput.addEventListener('keyup', (e) => {
+
+        console.log(subjectInput.value, e);
+
+        clearTimeout(loadArticlesTimeoutId);
+
+        if(subjectInput.value === '') {
+            spaceExist = false;
+        } else if (spaceExist || e.code === "Space") {
+            spaceExist = true;
+            loadArticlesTimeoutId = setTimeout(() => {
+                loadArticles(subjectInput.value)
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log(data.articles.results);
+                        appendArticles(data.articles.results);
+                    });
+            }, 200);
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>
